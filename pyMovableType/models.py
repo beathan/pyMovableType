@@ -287,9 +287,6 @@ class Category(MTModel):
                     'author_id', 'parent', 'basename',
                     'created_on']
         self.check_keys(expected, kwargs.keys())
-        if kwargs['basename'].find('$') >= 0:
-            kwargs['basename'] = kwargs['basename'].replace('$', 's')\
-                .replace('!', '')
         self.reformat_keys(kwargs)
 
 
