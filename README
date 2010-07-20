@@ -1,4 +1,4 @@
-pyMovableType is a very basic ORM for creating and querying objects from a Movable Type database. It was pulled from a larger project and built to suit specific needs, so it lacks many features and conveniences expected of an ORM, and in some cases requires knowledge of the Movable Type 4.1+ schema to properly create objects. 
+pyMovableType is a very basic ORM for creating and querying objects from a Movable Type database. It was pulled from a larger project and built to suit specific needs, so it lacks many features and conveniences expected of an ORM, and in some cases requires knowledge of the Movable Type 4.1+ schema to properly create objects. Querying is currently done via the object ID only.
 
 Dependencies: MySQLdb
 
