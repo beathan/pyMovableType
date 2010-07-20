@@ -1,0 +1,45 @@
+pyMovableType is a very basic ORM for creating and querying objects from a Movable Type database. It was pulled from a larger project and built to suit specific needs, so it lacks many features and conveniences expected of an ORM, and in some cases requires knowledge of the Movable Type 4.1+ schema to properly create objects. 
+
+Tested on python 2.6 and MySQL 5.1.42.
+
+
+Example usage -
+
+Editing an entry (note that e.title can be used instead of e.entry_title):
+>>> e = Entry.get(32324)
+>>> e
+<pyMT.models.Entry object at 0x10067ebd0>
+>>> e.title
+"A Picture is Worth..."
+>>> e.title = "This is the newer, better title."
+>>> e.save()
+>>> e.category.label
+'Pretty & Meaningful Pictures'
+>>> e.author.nickname
+'Mr. Jones, Omaha, Texas'
+>>> e.author.nickname = e.author.nickname.replace('Texas', 'Nebraska') 
+>>> e.author.nickname                                              
+'Mr. Jones, Omaha, Nebraska'
+>>> e.save()
+# Saving also commits changes to related objects like author, category, etc.
+>>> e = None
+>>> e = Entry.get(32324)
+>>> e.author.nickname
+'Mr. Jones, Omaha, Nebraska'
+>>> e.title
+'This is the newer, better title.'
+
+Creating a new author:
+>>> a = Author(**{'name': 'ben', 'nickname': 'Ben Boyd', 'email': 'ben@example.com'})
+>>> dir(a)
+['__class__', '__delattr__', '__dict__', '__doc__', '__format__', '__getattr__', '__getattribute__', '__hash__', '__init__', '__module__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__', '__str__', '__subclasshook__', '__unicode__', '__weakref__', 'author_email', 'author_name', 'author_nickname', 'build_save_query', 'check_keys', 'className', 'get', 'get_week_number', 'reformat_keys', 'save']
+>>> a
+<pyMT.models.Author object at 0x1004a9590>
+>>> a.name
+'ben'
+>>> a.save()
+>>> a.id
+3669L
+>>> new_a = Author.get(3669)
+>>> new_a.nickname
+'Ben Boyd'
