@@ -51,8 +51,8 @@ class MTQuery(object):
         if blog_id or folders:
             query = "%s WHERE" % query
         if blog_id:
-                   query = "%s category_blog_id = %d" % (query, 
-                                                         blog_id)
+            query = "%s category_blog_id = %d" % (query,
+                                                  blog_id)
         if folders:
             add_and = ' '
             if blog_id:
@@ -131,7 +131,7 @@ class MTQuery(object):
 
         rows, results = self.conn.execute(query)
         for object in results:
-            objects.append(self.get_object(object_type, 
+            objects.append(self.get_object(object_type,
                                            object["%s_id" % object_type]))
         return objects
 
@@ -166,7 +166,7 @@ class MTQuery(object):
         query = """SELECT field_type
                      FROM mt_field
                     WHERE field_blog_id = %d
-                      AND field_basename = '%s'""" % (blog_id, 
+                      AND field_basename = '%s'""" % (blog_id,
                                                       field_name.lower())
         rows, results = self.conn.execute(query)
         if rows == 1:
@@ -201,7 +201,7 @@ class MTQuery(object):
 if __name__ == '__main__':
     q = MTQuery()
     entry = q.get_entry(5)
-    
+
     # Parent category object (not included on entry.category by default)
     parent_cat = q.get_category(entry.category.parent)
     print parent_cat.label

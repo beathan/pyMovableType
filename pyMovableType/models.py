@@ -13,7 +13,7 @@ class MTModel(object):
     def save(self):
         """
         Commit the model's data to the database. The query will be constructed
-        as an insert or update, depnding on whether or not an ID exists on the
+        as an insert or update, depending on whether or not an ID exists on the
         current model.
 
         An MTConnection is opened and closed as needed to prevent too many
@@ -26,15 +26,15 @@ class MTModel(object):
         rows, results = self.conn.execute(query)
 
         if not self.id:
-            setattr(self, "%s_id" % self.className, 
+            setattr(self, "%s_id" % self.className,
                     self.conn.last_inserted_id())
 
         """
         Run through the items in this model's dict, checking to see if any
-        are subclasses of MTModel. If any are found, as would be the case 
+        are subclasses of MTModel. If any are found, as would be the case
         with entries that have associated categories, placements, and authors,
         call the save() method for each to make sure any changes are
-        committed. 
+        committed. It'd be nice to only save 'dirty' objects here.
         """
         for key, obj in self.__dict__.items():
             if issubclass(type(obj), MTModel):
@@ -43,6 +43,22 @@ class MTModel(object):
         self.conn.close()
 
     def build_save_query(self):
+        """
+        This piece of nasty constructs a query to either INSERT or UPDATE
+        a model depending on whether or not the current instance has an id.
+        The big hole here is that we trust the user not to arbitrarily set
+        an id on the model. Since I more or less trust myself, this has been
+        ok so far but it's not ideal - maybe raise an exception when the user
+        attempts to set the id?
+
+        Only items in self.__dict__ that have keys preceeded by
+        the name of the model (e.g. 'entry_') are included. Depending on the
+        type of the item, it is either included inside or outside quotes so
+        we can pop it directly into a query string.
+
+        Obviously, no escaping is done here as would be necessary to prevent
+        SQL injection, because it wasn't needed at the time this was created.
+        """
         values = []
         columns = [x for x in self.__dict__.keys()\
                        if x.find('%s_' % self.className) >= 0]
@@ -60,7 +76,7 @@ class MTModel(object):
                     value = "%s" % value
                     """
                     We have to encode the value here as latin-1 (iso-8859-1)
-                    because our MT installation uses it. 
+                    because our MT installation uses it.
                     """
                     value = value.encode('latin-1', 'replace')
                     value = "\"%s\"" % value.replace('"', '\\"')
@@ -86,7 +102,7 @@ class MTModel(object):
 
     def check_keys(self, expected_keys, got_keys):
         """
-        MTModel subclasses are meant to provide a list of expected
+        MTModel subclasses must provide a list of expected
         attributes when instantiating a new instance of the model. This
         is done as a naive kind of validation to make sure any data you
         know you need to have is included when creating new objects.
@@ -101,10 +117,10 @@ class MTModel(object):
     def reformat_keys(self, kwargs):
         """
         To save typing, keys exclude the name of the model. In a Movable Type
-        database, fields are preceded by the name of the object, 
+        database, fields are preceded by the name of the object,
         e.g. entry_title for an mt_entry. To simplify usage, the MTModel class
         handles conversion of the field name from and to the correct usage,
-        so new instances can be created using the shortened form and 
+        so new instances can be created using the shortened form and
         attributes on objects can be accessed like:
         >>> e = Entry.get(55216)
         >>> e.title # rather than requiring e.entry_title
@@ -148,7 +164,7 @@ class MTModel(object):
     @classmethod
     def get(self, obj_id=None, *args, **kwargs):
         """
-        Defines a method to query an MTModel, for example:
+        Defines a class method to query an MTModel, for example:
         e = Entry.get(55216)
         c = Category.get(3)
         """
@@ -207,7 +223,7 @@ class ObjectAsset(MTModel):
 
     def __init__(self, *args, **kwargs):
         super(ObjectAsset, self).__init__()
-        expected = ['asset_id', 'blog_id', 'embedded', 
+        expected = ['asset_id', 'blog_id', 'embedded',
                     'object_ds', 'object_id']
         self.check_keys(expected, kwargs.keys())
         self.reformat_keys(kwargs)
@@ -242,7 +258,7 @@ class Entry_Meta(MTModel):
             kwargs['type'] = "field.%s" % kwargs['type']
         kwargs['type'] = kwargs['type'].lower()
         meta_column = mtquery.get_field_type(kwargs['blog_id'],
-                                             kwargs['type'].replace('field.', 
+                                             kwargs['type'].replace('field.',
                                                                     ''))
         kwargs[meta_column] = kwargs['data']
         del kwargs['data']
@@ -261,7 +277,7 @@ class Category_Meta(MTModel):
             kwargs['type'] = "field.%s" % kwargs['type']
         kwargs['type'] = kwargs['type'].lower()
         meta_column = mtquery.get_field_type(kwargs['blog_id'],
-                                             kwargs['type'].replace('field.', 
+                                             kwargs['type'].replace('field.',
                                                                     ''))
         kwargs[meta_column] = kwargs['data']
         del kwargs['data']
